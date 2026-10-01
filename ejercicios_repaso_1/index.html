@@ -1,1 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejercicios Repaso 1 | Pensamiento Matemático III</title>
+  <style>
+    :root {
+      --primary-color: #1e3a8a;
+      --primary-light: #2563eb;
+      --secondary-color: #0d9488;
+      --accent-color: #d97706;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --radius: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .no-select { user-select: none; }
+    body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #ffffff; padding: 1.5rem 2rem; box-shadow: var(--shadow-md);
+    }
+    .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .brand-title h1 { font-size: 1.5rem; font-weight: 700; }
+    .brand-title p { font-size: 0.85rem; opacity: 0.9; }
+
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
+
+    .score-board {
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      color: #ffffff; padding: 1.25rem 2rem; border-radius: var(--radius);
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; box-shadow: var(--shadow-md); flex-wrap: wrap; gap: 1rem;
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; font-family: monospace; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; opacity: 0.9; }
+
+    /* Barra de Progreso Visual */
+    .progress-container {
+      width: 100%; background: #e2e8f0; border-radius: 10px; height: 18px;
+      overflow: hidden; margin-top: 0.5rem; border: 1px solid var(--border-color);
+    }
+    .progress-bar {
+      height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #16a34a);
+      transition: width 0.4s ease; text-align: center; font-size: 0.75rem; color: #fff; font-weight: bold; line-height: 18px;
+    }
+
+    .card {
+      background: var(--card-bg); border-radius: var(--radius); padding: 1.75rem;
+      margin-bottom: 1.5rem; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);
+      transition: opacity 0.3s ease;
+    }
+    .card-title {
+      font-size: 1.25rem; font-weight: 700; color: var(--primary-color);
+      margin-bottom: 1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+    .interactive-widget { background: #f8fafc; border-radius: var(--radius); padding: 1.25rem; text-align: center; border: 1px solid var(--border-color); }
+    .svg-container { width: 100%; height: 180px; background: #ffffff; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1rem; }
+
+    .control-group { margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
+    input[type="range"] { width: 100%; accent-color: var(--primary-light); }
+    select, input[type="number"] {
+      width: 100%; padding: 0.65rem 0.9rem; border: 1px solid var(--border-color);
+      border-radius: 8px; font-size: 0.95rem; background-color: #ffffff;
+    }
+
+    .btn {
+      background: var(--primary-light); color: #ffffff; border: none; padding: 0.75rem 1.25rem;
+      border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;
+    }
+    .btn:hover { background: var(--primary-color); }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-reset { background: #dc2626; }
+    .btn-reset:hover { background: #991b1b; }
+
+    .feedback-alert { padding: 0.85rem 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; font-weight: 600; display: none; }
+    .feedback-alert.correct { display: block; background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .feedback-alert.incorrect { display: block; background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    .locked-card { background: #f8fafc; border: 2px dashed #cbd5e1; opacity: 0.6; position: relative; }
+    .locked-overlay { background: rgba(15, 23, 42, 0.88); color: #ffffff; border-radius: var(--radius); padding: 2rem; text-align: center; }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 1.5rem; font-size: 0.85rem; margin-top: auto; }
+  </style>
+</head>
+<body class="no-select">
+
+  <header>
+    <div class="header-container">
+      <div class="brand-title">
+        <h1>Geometría Interactiva: Ejercicios Repaso 1</h1>
+        <p>Pensamiento Matemático III | Autor: <strong>L.I. Luis Arturo López Vergara</strong></p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Panel de Control y Progreso -->
+    <div class="score-board">
+      <div class="stat-item">
+        <div class="stat-value" id="pts">0</div>
+        <div class="stat-label">Puntos Acumulados</div>
+      </div>
+      <div class="stat-item" style="flex: 1; max-width: 300px;">
+        <div class="stat-label">Progreso de Avance Secuencial</div>
+        <div class="progress-container">
+          <div class="progress-bar" id="p-bar">0%</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="streak">0 🔥</div>
+        <div class="stat-label">Racha de Éxito</div>
+      </div>
+      <div>
+        <button class="btn btn-reset" onclick="resetAllProgress()">🔄 Reiniciar Progreso</button>
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius); padding:1rem; margin-bottom:1.5rem;">
+      <h4 style="color:#166534;">🔒 Mecanismo de Avance Progresivo Obligatorio</h4>
+      <p style="font-size:0.85rem; color:#15803d;">Resuelve los casos en orden estricto. Cada solución correcta desbloqueará el siguiente ejercicio. Completa el 100% (50 Puntos) para liberar la prueba final de libreta.</p>
+    </div>
+
+    <!-- Caso 1 (Habilitado inicio) -->
+    <div class="card" id="card-ped1">
+      <div class="card-title">🌱 Caso 1: Estructura de Invernadero Automatizado (10 Pts)</div>
+      <p style="margin-bottom:1rem;">
+        El arco de un invernadero forma dos ángulos adyacentes suplementarios sobre el piso (suma = 180°). El ángulo de soporte interno mide <strong>5x + 10°</strong> y el externo mide <strong>3x + 10°</strong>.
+        <br><strong>Instrucción:</strong> Resuelve (5x + 10) + (3x + 10) = 180° para hallar <i>x</i> (x = 20) y fija el deslizador en dicho valor.
+      </p>
+      <div class="interactive-widget">
+        <div class="grid-2" style="align-items:center;">
+          <div class="svg-container">
+            <svg width="100%" height="100%" viewBox="0 0 280 160">
+              <line x1="20" y1="130" x2="260" y2="130" stroke="#0f172a" stroke-width="3"/>
+              <line id="gh-arm" x1="140" y1="130" x2="220" y2="30" stroke="#16a34a" stroke-width="4"/>
+              <text id="lbl-gh" x="140" y="115" font-weight="bold" fill="#16a34a" font-size="12">Variable x = 10</text>
+            </svg>
+          </div>
+          <div>
+            <div class="control-group">
+              <label for="sl-gh">Ajustar Deslizador x: <span id="val-gh" style="color:#16a34a; font-weight:bold;">10</span></label>
+              <input type="range" id="sl-gh" min="5" max="40" value="10" oninput="updateGHSim(this.value)">
+            </div>
+            <button class="btn" style="margin-top:1rem; width:100%;" id="btn-ped1" onclick="evalPed1()">🔒 Fijar Parámetro Invernadero</button>
+          </div>
+        </div>
+      </div>
+      <div id="ped1-feedback" class="feedback-alert"></div>
+    </div>
+
+    <!-- Caso 2 (Bloqueado) -->
+    <div class="card locked-card" id="card-ped2">
+      <div class="card-title">📡 Caso 2: Calibración de Antena de Telecomunicaciones (10 Pts)</div>
+      <p style="margin-bottom:1rem;">
+        Un tirante sostiene una antena vertical formando un triángulo rectángulo. El ángulo de elevación con el piso es <strong>4x + 2°</strong> y el ángulo superior con la torre es <strong>2x - 8°</strong> (suma de complementarios = 90°).
+        <br><strong>Instrucción:</strong> Resuelve (4x + 2) + (2x - 8) = 90° para hallar <i>x</i> (x = 16) e ingresa la elevación real (66°).
+      </p>
+      <div class="interactive-widget">
+        <div class="grid-2" style="align-items:center;">
+          <div class="svg-container">
+            <svg width="100%" height="100%" viewBox="0 0 280 160">
+              <line x1="30" y1="130" x2="250" y2="130" stroke="#0f172a" stroke-width="3"/>
+              <line x1="220" y1="130" x2="220" y2="20" stroke="#1e3a8a" stroke-width="4"/>
+              <line id="ant-arm" x1="50" y1="130" x2="220" y2="30" stroke="#2563eb" stroke-width="3"/>
+              <text id="lbl-ant" x="110" y="120" font-weight="bold" fill="#2563eb" font-size="12">Elevación: 30°</text>
+            </svg>
+          </div>
+          <div>
+            <div class="control-group">
+              <label for="sl-ant">Fijar Ángulo Elevación (°): <span id="val-ant" style="color:#2563eb; font-weight:bold;">30°</span></label>
+              <input type="range" id="sl-ant" min="20" max="80" value="30" disabled oninput="updateAntSim(this.value)">
+            </div>
+            <button class="btn" style="margin-top:1rem; width:100%;" id="btn-ped2" disabled onclick="evalPed2()">🔒 Caso Bloqueado</button>
+          </div>
+        </div>
+      </div>
+      <div id="ped2-feedback" class="feedback-alert"></div>
+    </div>
+
+    <!-- Caso 3 (Bloqueado) -->
+    <div class="card locked-card" id="card-ped3">
+      <div class="card-title">🌉 Caso 3: Soporte Triangulado de Puente Peatonal (10 Pts)</div>
+      <p style="margin-bottom:1rem;">
+        Un triángulo de soporte tiene ángulos internos definidos por <strong>x + 15°</strong>, <strong>3x - 5°</strong> y <strong>2x + 10°</strong> (suma = 180°).
+        <br><strong>Instrucción:</strong> Resuelve 6x + 20 = 180° (x = 26), ajusta el deslizador e identifica la clasificación de los ángulos resultantes (41°, 73°, 66°).
+      </p>
+      <div class="interactive-widget">
+        <div class="grid-2" style="align-items:center;">
+          <div class="svg-container">
+            <svg width="100%" height="100%" viewBox="0 0 280 160">
+              <polygon id="bridge-tri" points="40,130 240,130 150,30" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+              <text id="lbl-br" x="140" y="22" font-size="11" font-weight="bold" text-anchor="middle">x = 10</text>
+            </svg>
+          </div>
+          <div>
+            <div class="control-group">
+              <label for="sl-br">Ajustar Variable x: <span id="val-br" style="color:#d97706; font-weight:bold;">10</span></label>
+              <input type="range" id="sl-br" min="10" max="40" value="10" disabled oninput="updateBrSim(this.value)">
+            </div>
+            <div class="control-group" style="margin-top:0.5rem;">
+              <label for="ped3-type">Clasificación según Ángulos:</label>
+              <select id="ped3-type" disabled>
+                <option value="">-- Selecciona --</option>
+                <option value="acut">Triángulo Acutángulo</option>
+                <option value="rect">Triángulo Rectángulo</option>
+                <option value="obtu">Triángulo Obtusángulo</option>
+              </select>
+            </div>
+            <button class="btn" style="margin-top:0.8rem; width:100%;" id="btn-ped3" disabled onclick="evalPed3()">🔒 Caso Bloqueado</button>
+          </div>
+        </div>
+      </div>
+      <div id="ped3-feedback" class="feedback-alert"></div>
+    </div>
+
+    <!-- Caso 4 (Bloqueado) -->
+    <div class="card locked-card" id="card-ped4">
+      <div class="card-title">✈️ Caso 4: Ángulo de Planeo de Aeronave (10 Pts)</div>
+      <p style="margin-bottom:1rem;">
+        En la trayectoria de descenso de un avión, la recta de ruta corta dos líneas paralelas de elevación por aire. Los ángulos alternos internos son <strong>5x - 15°</strong> y <strong>3x + 25°</strong>.
+        <br><strong>Instrucción:</strong> Al ser alternos internos, iguala expresiones: 5x - 15 = 3x + 25 para despejar <i>x</i> (x = 20) y fija el ángulo de inclinación de planeo (85°).
+      </p>
+      <div class="interactive-widget">
+        <div class="grid-2" style="align-items:center;">
+          <div class="svg-container">
+            <svg width="100%" height="100%" viewBox="0 0 280 160">
+              <line x1="20" y1="50" x2="260" y2="50" stroke="#64748b" stroke-width="2" stroke-dasharray="4"/>
+              <line x1="20" y1="120" x2="260" y2="120" stroke="#64748b" stroke-width="2" stroke-dasharray="4"/>
+              <line id="plane-path" x1="40" y1="140" x2="240" y2="30" stroke="#0d9488" stroke-width="4"/>
+              <text id="lbl-plane" x="140" y="25" font-weight="bold" fill="#0d9488" font-size="12" text-anchor="middle">Ángulo = 30°</text>
+            </svg>
+          </div>
+          <div>
+            <div class="control-group">
+              <label for="sl-plane">Fijar Ángulo de Planeo (°): <span id="val-plane" style="color:#0d9488; font-weight:bold;">30°</span></label>
+              <input type="range" id="sl-plane" min="30" max="110" value="30" disabled oninput="updatePlaneSim(this.value)">
+            </div>
+            <button class="btn" style="margin-top:1rem; width:100%;" id="btn-ped4" disabled onclick="evalPed4()">🔒 Caso Bloqueado</button>
+          </div>
+        </div>
+      </div>
+      <div id="ped4-feedback" class="feedback-alert"></div>
+    </div>
+
+    <!-- Caso 5 (Bloqueado) -->
+    <div class="card locked-card" id="card-ped5">
+      <div class="card-title">🛡️ Caso 5: Armadura Mecánica Isósceles (10 Pts)</div>
+      <p style="margin-bottom:1rem;">
+        Un brazo robótico articulado forma un triángulo isósceles. El ángulo del vértice principal es <strong>x + 10°</strong> y los dos ángulos congruentes de la base miden <strong>2x + 10°</strong> cada uno.
+        <br><strong>Instrucción:</strong> Resuelve (x + 10) + 2(2x + 10) = 180° → 5x + 30 = 180° para hallar <i>x</i> (x = 30) y ajusta el deslizador.
+      </p>
+      <div class="interactive-widget">
+        <div class="grid-2" style="align-items:center;">
+          <div class="svg-container">
+            <svg width="100%" height="100%" viewBox="0 0 280 160">
+              <polygon points="50,130 230,130 140,30" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+              <text id="lbl-arm" x="140" y="25" font-weight="bold" fill="#0284c7" font-size="12" text-anchor="middle">x = 10</text>
+            </svg>
+          </div>
+          <div>
+            <div class="control-group">
+              <label for="sl-arm">Ajustar Variable x: <span id="val-arm" style="color:#0284c7; font-weight:bold;">10</span></label>
+              <input type="range" id="sl-arm" min="10" max="50" value="10" disabled oninput="updateArmSim(this.value)">
+            </div>
+            <button class="btn" style="margin-top:1rem; width:100%;" id="btn-ped5" disabled onclick="evalPed5()">🔒 Caso Bloqueado</button>
+          </div>
+        </div>
+      </div>
+      <div id="ped5-feedback" class="feedback-alert"></div>
+    </div>
+
+    <!-- EJERCICIO FINAL DE CUADERNO (DESBLOQUEABLE AT 100%) -->
+    <div id="final-challenge-card" class="card locked-card">
+      <div id="final-lock-overlay" class="locked-overlay">
+        <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">🔒 Ejercicio Final Integrador Bloqueado</h3>
+        <p>Completa secuencialmente los 5 casos de repaso anteriores (50 Pts) para desbloquear el registro de la prueba en libreta.</p>
+      </div>
+
+      <div id="final-challenge-content" style="display:none;">
+        <div class="card-title" style="color:var(--accent-color); border-bottom-color:var(--accent-color);">
+          📝 EJERCICIO FINAL INTEGRADOR REPASO 1 (Para Resolver en Cuaderno)
+        </div>
+        <div style="background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; padding:1rem; margin-bottom:1rem;">
+          <p style="font-weight:bold; color:#9a3412;">📋 Instrucciones de Entrega Presencial:</p>
+          <p style="font-size:0.9rem; color:#c2410c;">
+            Copia el planteamiento en tu libreta, traza el esquema geométrico con transportador y regla, y redacta paso a paso el procedimiento algebraico completo.
+          </p>
+        </div>
+
+        <p style="font-weight:600; font-size:1rem; margin-bottom:0.75rem;">
+          Planteamiento del Problema: Torre Reticular de Comunicaciones con Cable Secante
+        </p>
+        <p style="margin-bottom:1rem; font-size:0.95rem;">
+          En la estructura de retícula de una torre, un triángulo de refuerzo $\triangle ABC$ presenta la siguiente configuración geométrica:
+          <br>• El ángulo interno $\angle A = 3x - 5^\circ$.
+          <br>• El ángulo interno $\angle B = 2x + 15^\circ$.
+          <br>• El ángulo **exterior** adyacente al vértice $C$ mide $130^\circ$.
+        </p>
+
+        <div style="background:#f8fafc; border:1px solid var(--border-color); padding:1rem; border-radius:8px; margin-bottom:1rem;">
+          <p style="font-weight:bold; color:var(--primary-color);">Cuestionario de Validación en Línea:</p>
+          <ol style="margin-left:1.2rem; font-size:0.9rem; line-height:1.8;">
+            <li>Aplica el teorema del ángulo exterior: $(3x - 5) + (2x + 15) = 130$ para hallar el valor algebraico de $x$.</li>
+            <li>Calcula la medida en grados del ángulo interno $\angle C$ ($\angle C = 180^\circ - 130^\circ$).</li>
+            <li>Obtén el **Código de Firma Anticopia** multiplicando $x \times \angle C$.</li>
+          </ol>
+        </div>
+
+        <div class="grid-2">
+          <div class="control-group">
+            <label for="fn-x">1. Valor algebraico de x:</label>
+            <input type="number" id="fn-x" placeholder="Ingresa x">
+          </div>
+          <div class="control-group">
+            <label for="fn-angC">2. Medida del ángulo interno ∠C (°):</label>
+            <input type="number" id="fn-angC" placeholder="Ingresa ∠C">
+          </div>
+          <div class="control-group">
+            <label for="fn-code">3. Código Firma de Validación (x × ∠C):</label>
+            <input type="number" id="fn-code" placeholder="Código de firma">
+          </div>
+          <div class="control-group">
+            <label for="fn-type">4. Clasificación del triángulo:</label>
+            <select id="fn-type">
+              <option value="">-- Selecciona --</option>
+              <option value="obtu">Obtusángulo Escaleno</option>
+              <option value="rect">Rectángulo Isósceles</option>
+              <option value="acut">Acutángulo Escaleno</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn" style="margin-top:1.25rem; width:100%; background:var(--accent-color);" onclick="evalFinalChallenge()">🏆 Firmar y Registrar Desafío de Cuaderno</button>
+        <div id="final-feedback" class="feedback-alert"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 CESA - Pensamiento Matemático III</p>
+    <p style="margin-top:0.25rem;">Desarrollado por: <strong>L.I. Luis Arturo López Vergara</strong></p>
+  </footer>
+
+  <script>
+    let points = 0;
+    let currentStreak = 0;
+    let solvedCases = { p1: false, p2: false, p3: false, p4: false, p5: false };
+
+    /* Actualizaciones SVG Dinámicas */
+    function updateGHSim(val) { document.getElementById('val-gh').innerText = val; document.getElementById('lbl-gh').innerText = `Variable x = ${val}`; }
+    function updateAntSim(val) { document.getElementById('val-ant').innerText = val + '°'; document.getElementById('lbl-ant').innerText = `Elevación: ${val}°`; }
+    function updateBrSim(val) { document.getElementById('val-br').innerText = val; document.getElementById('lbl-br').innerText = `x = ${val}`; }
+    function updatePlaneSim(val) { document.getElementById('val-plane').innerText = val + '°'; document.getElementById('lbl-plane').innerText = `Ángulo = ${val}°`; }
+    function updateArmSim(val) { document.getElementById('val-arm').innerText = val; document.getElementById('lbl-arm').innerText = `x = ${val}`; }
+
+    /* Lógica de Evaluación con Mecanismo de Candado */
+    function evalPed1() {
+      const val = parseFloat(document.getElementById('sl-gh').value);
+      const fb = document.getElementById('ped1-feedback');
+      if (val === 20) {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "¡Correcto (+10 Pts)! (5x + 10) + (3x + 10) = 180 → 8x = 160 → x = 20. Caso 2 desbloqueado.";
+        if (!solvedCases.p1) {
+          solvedCases.p1 = true;
+          disableControl('btn-ped1', 'sl-gh');
+          addScore(10);
+          unlockNextCase('card-ped2', 'sl-ant', null, 'btn-ped2', '🔒 Fijar Parámetro Antena');
+        }
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Incorrecto. Resuelve 8x + 20 = 180 → 8x = 160 → x = 20.";
+      }
+    }
+
+    function evalPed2() {
+      const val = parseFloat(document.getElementById('sl-ant').value);
+      const fb = document.getElementById('ped2-feedback');
+      if (val === 66) {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "¡Correcto (+10 Pts)! (4x + 2) + (2x - 8) = 90 → 6x = 96 → x = 16. Elevación = 4(16) + 2 = 66°. Caso 3 desbloqueado.";
+        if (!solvedCases.p2) {
+          solvedCases.p2 = true;
+          disableControl('btn-ped2', 'sl-ant');
+          addScore(10);
+          unlockNextCase('card-ped3', 'sl-br', 'ped3-type', 'btn-ped3', '🔒 Fijar Estructura Puente');
+        }
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Incorrecto. Para x = 16, la elevación es 4(16) + 2 = 66°. Ajusta a 66°.";
+      }
+    }
+
+    function evalPed3() {
+      const val = parseFloat(document.getElementById('sl-br').value);
+      const type = document.getElementById('ped3-type').value;
+      const fb = document.getElementById('ped3-feedback');
+      if (val === 26 && type === "acut") {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "¡Correcto (+10 Pts)! 6x + 20 = 180 → x = 26. Ángulos: 41°, 73°, 66° (Acutángulo). Caso 4 desbloqueado.";
+        if (!solvedCases.p3) {
+          solvedCases.p3 = true;
+          disableControl('btn-ped3', 'sl-br', 'ped3-type');
+          addScore(10);
+          unlockNextCase('card-ped4', 'sl-plane', null, 'btn-ped4', '🔒 Fijar Ángulo de Planeo');
+        }
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Incorrecto. Resuelve 6x = 160 → x = 26 y selecciona Triángulo Acutángulo.";
+      }
+    }
+
+    function evalPed4() {
+      const val = parseFloat(document.getElementById('sl-plane').value);
+      const fb = document.getElementById('ped4-feedback');
+      if (val === 85) {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "¡Correcto (+10 Pts)! 5x - 15 = 3x + 25 → 2x = 40 → x = 20. Ángulo = 5(20) - 15 = 85°. Caso 5 desbloqueado.";
+        if (!solvedCases.p4) {
+          solvedCases.p4 = true;
+          disableControl('btn-ped4', 'sl-plane');
+          addScore(10);
+          unlockNextCase('card-ped5', 'sl-arm', null, 'btn-ped5', '🔒 Fijar Armadura Mecánica');
+        }
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Incorrecto. Iguala expresiones para obtener x = 20. Ángulo: 5(20) - 15 = 85°.";
+      }
+    }
+
+    function evalPed5() {
+      const val = parseFloat(document.getElementById('sl-arm').value);
+      const fb = document.getElementById('ped5-feedback');
+      if (val === 30) {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "¡Correcto (+10 Pts)! (x + 10) + 2(2x + 10) = 180 → 5x = 150 → x = 30. ¡Has alcanzado el 100%!";
+        if (!solvedCases.p5) {
+          solvedCases.p5 = true;
+          disableControl('btn-ped5', 'sl-arm');
+          addScore(10);
+        }
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Incorrecto. Plantea 5x + 30 = 180 → 5x = 150 → x = 30.";
+      }
+    }
+
+    function evalFinalChallenge() {
+      const x = parseFloat(document.getElementById('fn-x').value);
+      const angC = parseFloat(document.getElementById('fn-angC').value);
+      const code = parseFloat(document.getElementById('fn-code').value);
+      const type = document.getElementById('fn-type').value;
+      const fb = document.getElementById('final-feedback');
+
+      if (x === 24 && angC === 50 && code === 1200 && type === "acut") {
+        fb.className = "feedback-alert correct";
+        fb.innerText = "🎉 ¡DESAFÍO FIRMADO Y REGISTRADO! Muestra tu libreta al profesor con el código de validación: 1200.";
+      } else {
+        fb.className = "feedback-alert incorrect";
+        fb.innerText = "Respuesta o Código Incorrecto. Revisa: (3x-5)+(2x+15)=130 → 5x+10=130 → x=24. ∠C = 180-130 = 50. Firma = 24 × 50 = 1200.";
+      }
+    }
+
+    /* Auxiliares de Estado */
+    function addScore(pts) {
+      points += pts;
+      currentStreak++;
+      document.getElementById('pts').innerText = points;
+      document.getElementById('streak').innerText = currentStreak + " 🔥";
+
+      const pct = (points / 50) * 100;
+      const bar = document.getElementById('p-bar');
+      bar.style.width = pct + "%";
+      bar.innerText = pct + "%";
+
+      if (points >= 50) {
+        unlockFinalChallenge();
+      }
+    }
+
+    function unlockNextCase(cardId, sliderId, selectId, btnId, btnText) {
+      const card = document.getElementById(cardId);
+      if (card) card.classList.remove('locked-card');
+
+      const slider = document.getElementById(sliderId);
+      if (slider) slider.disabled = false;
+
+      if (selectId) {
+        const sel = document.getElementById(selectId);
+        if (sel) sel.disabled = false;
+      }
+
+      const btn = document.getElementById(btnId);
+      if (btn) { btn.disabled = false; btn.innerText = btnText; }
+    }
+
+    function disableControl(btnId, sliderId, selectId) {
+      document.getElementById(btnId).disabled = true;
+      document.getElementById(sliderId).disabled = true;
+      if (selectId) document.getElementById(selectId).disabled = true;
+    }
+
+    function unlockFinalChallenge() {
+      const card = document.getElementById('final-challenge-card');
+      const overlay = document.getElementById('final-lock-overlay');
+      const content = document.getElementById('final-challenge-content');
+
+      card.classList.remove('locked-card');
+      overlay.style.display = 'none';
+      content.style.display = 'block';
+      alert("🏆 ¡100% COMPLETADO! Se ha desbloqueado el Ejercicio Final Integrador Repaso 1 para libreta.");
+    }
+
+    function resetAllProgress() {
+      if (!confirm("¿Deseas reiniciar tu progreso en la guía de repaso?")) return;
+      location.reload();
+    }
+  </script>
+</body>
+</html>
